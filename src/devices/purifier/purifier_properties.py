@@ -1,0 +1,37 @@
+from enum import Enum
+
+class StatusCode(str, Enum):
+    POWER = '80'
+    OPERATION_MODE = 'B0'
+    AIRFLOW = 'A0'
+    AIR_VOLUME = 'A1'
+    HUMIDITY = 'BA'
+    ROOM_TEMPERATURE = 'BB'
+    PM25 = 'CA'
+    ODOR = 'CB'
+    FILTER_LIFE = 'CB'
+    FILTERLIFE_SIGN = 'CF'
+    PURIFICATION_LEVEL = 'D0'
+    HUMIDITY_LEVEL = 'D1'
+
+class ValueSingle(str, Enum):
+    POWER_ON = '30'
+    POWER_OFF = '31'
+
+    OPERATION_AUTO = '41'
+    OPERATION_MANUAL = '42'
+    OPERATION_POLLEN = '43'
+    OPERATION_QUIET = '44'
+
+    AIRFLOW_AUTO = '41'
+    AIRFLOW_MANUAL = '42'
+
+    AIR_VOLUME_AUTO = '41'
+    AIR_VOLUME_QUIET = '31'
+    AIR_VOLUME_LOW = '32'
+    AIR_VOLUME_MEDIUM = '33'
+    AIR_VOLUME_HIGH = '34'
+    AIR_VOLUME_TURBO = '35'
+
+    FILTERLIFE_SIGN_OFF = '41'
+    FILTERLIFE_SIGN_ON = '42'
