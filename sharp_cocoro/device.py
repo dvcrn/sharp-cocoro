@@ -47,4 +47,4 @@ class Device(ABC):
         return next((prop for prop in self.properties if prop.statusCode == status_code), None)
 
     def get_property_status(self, status_code: str) -> Optional[PropertyStatus]:
-        return next((status for status in self.status if status.status_code == status_code), None)
+        return next((status for status in self.status if status.statusCode == status_code), None)

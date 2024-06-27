@@ -9,6 +9,16 @@ class Aircon(Device):
         assert isinstance(state8_bin, BinaryPropertyStatus)
         return State8(state8_bin.valueBinary['code'])
 
+    def get_power_status(self) -> ValueSingle:
+        status = self.get_property_status(StatusCode.POWER)
+        assert isinstance(status, SinglePropertyStatus)
+        return ValueSingle(status.valueSingle['code'])
+
+    def get_operation_mode(self) -> ValueSingle:
+        status = self.get_property_status(StatusCode.OPERATION_MODE)
+        assert isinstance(status, SinglePropertyStatus)
+        return ValueSingle(status.valueSingle['code'])
+
     def get_temperature(self) -> float:
         return self.get_state8().temperature
 
