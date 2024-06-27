@@ -1,4 +1,5 @@
-import requests
+import asyncio
+import aiohttp
 from typing import List, Dict, Any, Union
 from .properties import DeviceType, PropertyStatus, Property
 from .response_types import Box, QueryBoxesResponse, QueryDevicePropertiesResponse, ControlListResponse
@@ -14,28 +15,34 @@ class Cocoro:
         self.service_name = service_name
         self.is_authenticated = False
         self.api_base = 'https://hms.cloudlabs.sharp.co.jp/hems/pfApi/ta'
-        self.session = requests.Session()
-        self.session.headers.update({
+        self.session = None
+        self.headers = {
             'Content-Type': 'application/json; charset=utf-8',
             'User-Agent': 'smartlink_v200i Mozilla/5.0 (iPad; CPU OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'
-        })
+        }
 
-    def send_get_request(self, path: str) -> Dict:
-        response = self.session.get(f"{self.api_base}{path}")
-        response.raise_for_status()  # This will raise an exception for HTTP errors
-        return response.json()
+    async def _create_session(self):
+        if self.session is None:
+            self.session = aiohttp.ClientSession(headers=self.headers)
 
-    def send_post_request(self, path: str, body: Dict) -> Dict:
-        response = self.session.post(f"{self.api_base}{path}", json=body)
-        response.raise_for_status()  # This will raise an exception for HTTP errors
-        return response.json()
+    async def send_get_request(self, path: str) -> Dict:
+        await self._create_session()
+        async with self.session.get(f"{self.api_base}{path}") as response:
+            response.raise_for_status()
+            return await response.json()
+
+    async def send_post_request(self, path: str, body: Dict) -> Dict:
+        await self._create_session()
+        async with self.session.post(f"{self.api_base}{path}", json=body) as response:
+            response.raise_for_status()
+            return await response.json()
 
     @staticmethod
     def device_type_from_string(s: str) -> DeviceType:
         return DeviceType(s)
 
     async def login(self) -> Dict[str, str]:
-        json_res = self.send_post_request(
+        json_res = await self.send_post_request(
             f"/setting/login/?appSecret={self.app_secret}&serviceName={self.service_name}",
             {"terminalAppId": f"https://db.cloudlabs.sharp.co.jp/clpf/key/{self.app_key}"}
         )
@@ -43,15 +50,15 @@ class Cocoro:
         return json_res
 
     async def query_boxes(self) -> List[Box]:
-        res = self.send_get_request(
+        res = await self.send_get_request(
             f"/setting/boxInfo/?appSecret={self.app_secret}&mode=other"
         )
         res_parsed = QueryBoxesResponse(**res)
         return res_parsed.box
 
-    def query_box_properties(self, box: Box) -> Dict[str, Union[List[Property], List[PropertyStatus]]]:
+    async def query_box_properties(self, box: Box) -> Dict[str, Union[List[Property], List[PropertyStatus]]]:
         echonet_data = box.echonetData[0]
-        res = self.send_get_request(
+        res = await self.send_get_request(
             f"/control/deviceProperty?boxId={box.boxId}&appSecret={self.app_secret}"
             f"&echonetNode={echonet_data.echonetNode}&echonetObject={echonet_data.echonetObject}&status=true"
         )
@@ -66,7 +73,7 @@ class Cocoro:
         devices = []
 
         for box in boxes:
-            properties_and_status =  self.query_box_properties(box)
+            properties_and_status = await self.query_box_properties(box)
             properties = properties_and_status["properties"]
             status = properties_and_status["status"]
 
@@ -95,7 +102,7 @@ class Cocoro:
 
         return devices
 
-    def execute_queued_updates(self, device: Device) -> Dict[str, str]:
+    async def execute_queued_updates(self, device: Device) -> Dict[str, str]:
         update_map = list(device.property_updates.values())
 
         body = {
@@ -109,7 +116,7 @@ class Cocoro:
             ]
         }
 
-        json_body = self.send_post_request(
+        json_body = await self.send_post_request(
             f"/control/deviceControl?boxId={device.box.boxId}&appSecret={self.app_secret}",
             body
         )
@@ -136,10 +143,14 @@ class Cocoro:
 
         return json_body
 
-    def fetch_device(self, device: Device) -> Device:
-        devices = self.query_devices()
+    async def fetch_device(self, device: Device) -> Device:
+        devices = await self.query_devices()
         for d in devices:
             if d.device_id == device.device_id:
                 return d
 
         raise Exception("device does not exist")
+
+    async def close(self):
+        if self.session:
+            await self.session.close()
