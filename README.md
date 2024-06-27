@@ -16,21 +16,22 @@ async def main():
     app_secret = ''
     app_key = ''
     # iClub is the default service name, you can also leave it out
-    cocoro = Cocoro(app_secret, app_key, 'iClub')
-    
-    await cocoro.login()
-    devices = await cocoro.query_devices()
-    device = devices[0]
-    
-    # aircon
-    if isinstance(device, Aircon):
-        aircon = device
-        aircon.queue_power_on()
-        print(cocoro.execute_queued_updates(aircon))
-    else:
-        print("The first device is not an Aircon")
+    async with Cocoro(app_secret=app_secret, app_key=app_key) as cocoro:
+        await cocoro.login()
+        devices = await cocoro.query_devices()
+        device = devices[0]
 
-# Run the async function
+        print("property")
+        print(device.get_property(StatusCode.OPERATION_MODE))
+        
+        # aircon
+        if isinstance(device, Aircon):
+            aircon = device
+            aircon.queue_power_on()
+            print(await cocoro.execute_queued_updates(aircon))
+        else:
+            print("The first device is not an Aircon")
+
 asyncio.run(main())
 ```
 

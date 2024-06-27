@@ -21,8 +21,20 @@ class Cocoro:
             'User-Agent': 'smartlink_v200i Mozilla/5.0 (iPad; CPU OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'
         }
 
+    async def __aenter__(self):
+        await self._create_session()
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        await self.close()
+
+    async def close(self):
+        if self.session:
+            await self.session.close()
+            self.session = None
+
     async def _create_session(self):
-        if self.session is None:
+        if self.session is None or self.session.closed:
             self.session = aiohttp.ClientSession(headers=self.headers)
 
     async def send_get_request(self, path: str) -> Dict:
