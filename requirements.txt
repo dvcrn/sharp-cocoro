@@ -7,7 +7,6 @@ frozenlist==1.4.1
 idna==3.7
 multidict==6.0.5
 pydantic==1.10.17
-requests==2.32.3
 setuptools==70.0.0
 typing_extensions==4.12.2
 wheel==0.43.0
