@@ -44,9 +44,6 @@ class Device(ABC):
         raise ValueError(f"property {status_code} does not exist on this device")
 
     def get_property(self, status_code: str) -> Optional[Property]:
-        print(self.properties)
-        print(len(self.properties))
-        print(self.properties[0])
         return next((prop for prop in self.properties if prop.statusCode == status_code), None)
 
     def get_property_status(self, status_code: str) -> Optional[PropertyStatus]:

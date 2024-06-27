@@ -50,21 +50,11 @@ class Cocoro:
         return res_parsed.box
 
     def query_box_properties(self, box: Box) -> Dict[str, Union[List[Property], List[PropertyStatus]]]:
-        print("box????")
-        print(box)
         echonet_data = box.echonetData[0]
-        print("echonet data ???? ")
-        print(echonet_data)
         res = self.send_get_request(
             f"/control/deviceProperty?boxId={box.boxId}&appSecret={self.app_secret}"
             f"&echonetNode={echonet_data.echonetNode}&echonetObject={echonet_data.echonetObject}&status=true"
         )
-        print("response??")
-        print(res)
-        print("---")
-        print("---")
-        print("---")
-        print(res['deviceProperty'])
         res_parsed = QueryDevicePropertiesResponse(res['deviceProperty'])
         return {
             "properties": res_parsed.device_property.property,
@@ -79,11 +69,6 @@ class Cocoro:
             properties_and_status =  self.query_box_properties(box)
             properties = properties_and_status["properties"]
             status = properties_and_status["status"]
-
-            print("")
-            print("echonet??? data??")
-            print("")
-            print(box.echonetData[0])
 
             device_type = self.device_type_from_string(box.echonetData[0].labelData.deviceType)
 
@@ -123,8 +108,6 @@ class Cocoro:
                 }
             ]
         }
-
-        print(body)
 
         json_body = self.send_post_request(
             f"/control/deviceControl?boxId={device.box.boxId}&appSecret={self.app_secret}",
