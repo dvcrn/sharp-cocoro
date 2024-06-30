@@ -1,5 +1,6 @@
 import asyncio
 import aiohttp
+import httpx
 from typing import List, Dict, Any, Union
 from .properties import DeviceType, PropertyStatus, Property
 from .response_types import Box, QueryBoxesResponse, QueryDevicePropertiesResponse, ControlListResponse
@@ -34,20 +35,20 @@ class Cocoro:
             self.session = None
 
     async def _create_session(self):
-        if self.session is None or self.session.closed:
-            self.session = aiohttp.ClientSession(headers=self.headers)
+        if not hasattr(self, 'client') or self.client.is_closed:
+            self.client = httpx.AsyncClient(headers=self.headers)
 
     async def send_get_request(self, path: str) -> Dict:
         await self._create_session()
-        async with self.session.get(f"{self.api_base}{path}") as response:
-            response.raise_for_status()
-            return await response.json()
+        response = await self.client.get(f"{self.api_base}{path}")
+        response.raise_for_status()
+        return response.json()
 
     async def send_post_request(self, path: str, body: Dict) -> Dict:
         await self._create_session()
-        async with self.session.post(f"{self.api_base}{path}", json=body) as response:
-            response.raise_for_status()
-            return await response.json()
+        response = await self.client.post(f"{self.api_base}{path}", json=body)
+        response.raise_for_status()
+        return response.json()
 
     @staticmethod
     def device_type_from_string(s: str) -> DeviceType:
@@ -115,7 +116,9 @@ class Cocoro:
         return devices
 
     async def execute_queued_updates(self, device: Device) -> Dict[str, str]:
-        update_map = list(device.property_updates.values())
+        status_map = []
+        for key, val in device.property_updates.items():
+            status_map.append(val.to_map())
 
         body = {
             "controlList": [
@@ -123,7 +126,7 @@ class Cocoro:
                     "deviceId": device.device_id,
                     "echonetNode": device.echonet_node,
                     "echonetObject": device.echonet_object,
-                    "status": update_map,
+                    "status": status_map,
                 }
             ]
         }
@@ -145,10 +148,11 @@ class Cocoro:
             if errors:
                 raise Exception("Cocoro API Error: " + ",".join(errors))
 
-        for status in update_map:
+
+        for status in device.property_updates.values():
             for i, s in enumerate(device.status):
                 # TODO: change to proper type
-                if s.statusCode == status['statusCode']:
+                if s.statusCode == status.statusCode:
                     device.status[i] = status
 
         device.property_updates.clear()

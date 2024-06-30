@@ -1,5 +1,5 @@
 from ...device import Device
-from ...properties import BinaryPropertyStatus, RangePropertyStatus, SinglePropertyStatus, ValueType
+from ...properties import BinaryPropertyStatus, RangePropertyStatus, SinglePropertyStatus, ValueType, enum_to_str
 from ...state import State8
 from .aircon_properties import StatusCode, ValueSingle
 
@@ -15,7 +15,7 @@ class Aircon(Device):
         return ValueSingle(status.valueSingle['code'])
 
     def get_operation_mode(self) -> ValueSingle:
-        status = self.get_property_status(StatusCode.OPERATION_MODE)
+        status = self.get_property_status(enum_to_str(StatusCode.OPERATION_MODE))
         assert isinstance(status, SinglePropertyStatus)
         return ValueSingle(status.valueSingle['code'])
 
@@ -36,31 +36,43 @@ class Aircon(Device):
         s8 = State8()
         s8.temperature = temp
 
-        self.queue_property_status_update({
-            'statusCode': StatusCode.STATE_DETAIL,
-            'valueType': ValueType.BINARY,
-            'valueBinary': {
-                'code': s8.state
-            }
-        })
+        self.queue_property_status_update(BinaryPropertyStatus(StatusCode.STATE_DETAIL, {
+            "code": s8.state
+        }))
+
+        # self.queue_property_status_update({
+        #     'statusCode': StatusCode.STATE_DETAIL,
+        #     'valueType': ValueType.BINARY,
+        #     'valueBinary': {
+        #         'code': s8.state
+        #     }
+        # })
 
     def queue_power_on(self) -> None:
-        self.queue_property_status_update({
-            'statusCode': StatusCode.POWER,
-            'valueType': ValueType.SINGLE,
-            'valueSingle': {
-                'code': ValueSingle.POWER_ON
-            }
-        })
+        self.queue_property_status_update(SinglePropertyStatus(StatusCode.POWER, {
+            "code": ValueSingle.POWER_ON.value
+        }))
+
+        # self.queue_property_status_update({
+        #     'statusCode': StatusCode.POWER,
+        #     'valueType': ValueType.SINGLE,
+        #     'valueSingle': {
+        #         'code': ValueSingle.POWER_ON
+        #     }
+        # })
 
     def queue_power_off(self) -> None:
-        self.queue_property_status_update({
-            'statusCode': StatusCode.POWER,
-            'valueType': ValueType.SINGLE,
-            'valueSingle': {
-                'code': ValueSingle.POWER_OFF
-            }
-        })
+        self.queue_property_status_update(SinglePropertyStatus(StatusCode.POWER, {
+            "code": ValueSingle.POWER_OFF.value
+        }))
+
+        # self.queue_property_status_update({
+        #     'statusCode': StatusCode.POWER,
+        #     'valueType': ValueType.SINGLE,
+        #     'valueSingle': {
+        #         'code': ValueSingle.POWER_OFF
+        #     }
+        # })
 
     def queue_operation_mode_update(self, mode: ValueSingle) -> None:
         valid_modes = [
@@ -74,13 +86,17 @@ class Aircon(Device):
         if mode not in valid_modes:
             raise ValueError(f"Invalid operation mode: {mode}")
 
-        self.queue_property_status_update({
-            'statusCode': StatusCode.OPERATION_MODE,
-            'valueType': ValueType.SINGLE,
-            'valueSingle': {
-                'code': mode
-            }
-        })
+        self.queue_property_status_update(SinglePropertyStatus(StatusCode.OPERATION_MODE, {
+            "code": mode.value
+        }))
+
+        # self.queue_property_status_update({
+        #     'statusCode': StatusCode.OPERATION_MODE,
+        #     'valueType': ValueType.SINGLE,
+        #     'valueSingle': {
+        #         'code': mode
+        #     }
+        # })
 
     def queue_windspeed_update(self, mode: ValueSingle) -> None:
         valid_modes = [
@@ -97,10 +113,14 @@ class Aircon(Device):
         if mode not in valid_modes:
             raise ValueError(f"Invalid windspeed mode: {mode}")
 
-        self.queue_property_status_update({
-            'statusCode': StatusCode.WINDSPEED,
-            'valueType': ValueType.SINGLE,
-            'valueSingle': {
-                'code': mode
-            }
-        })
+        self.queue_property_status_update(SinglePropertyStatus(StatusCode.WINDSPEED, {
+            "code": mode.value
+        }))
+
+        # self.queue_property_status_update({
+        #     'statusCode': StatusCode.WINDSPEED,
+        #     'valueType': ValueType.SINGLE,
+        #     'valueSingle': {
+        #         'code': mode
+        #     }
+        # })

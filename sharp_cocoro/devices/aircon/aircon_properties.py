@@ -13,8 +13,8 @@ class ValueSingle(str, Enum):
     POWER_ON = '30'
     POWER_OFF = '31'
 
-    NANOE_ON = '41'
-    NANOE_OFF = '42'
+    # NANOE_ON = '41'
+    # NANOE_OFF = '42'
 
     OPERATION_OTHER = '40'
     OPERATION_AUTO = '41'
@@ -32,3 +32,4 @@ class ValueSingle(str, Enum):
     WINDSPEED_LEVEL_7 = '37'
     WINDSPEED_LEVEL_8 = '38'
     WINDSPEED_LEVEL_AUTO = '41'
+
