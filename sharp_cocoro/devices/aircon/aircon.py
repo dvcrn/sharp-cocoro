@@ -1,3 +1,4 @@
+from typing import Union
 from ...device import Device
 from ...properties import BinaryPropertyStatus, RangePropertyStatus, SinglePropertyStatus, ValueType, enum_to_str
 from ...state import State8
@@ -98,7 +99,7 @@ class Aircon(Device):
         #     }
         # })
 
-    def queue_windspeed_update(self, mode: ValueSingle) -> None:
+    def queue_windspeed_update(self, mode: Union[ValueSingle, str]) -> None:
         valid_modes = [
             ValueSingle.WINDSPEED_LEVEL_1,
             ValueSingle.WINDSPEED_LEVEL_2,
@@ -114,7 +115,7 @@ class Aircon(Device):
             raise ValueError(f"Invalid windspeed mode: {mode}")
 
         self.queue_property_status_update(SinglePropertyStatus(StatusCode.WINDSPEED, {
-            "code": mode.value
+            "code": enum_to_str(mode)
         }))
 
         # self.queue_property_status_update({
