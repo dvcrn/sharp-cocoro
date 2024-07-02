@@ -39,18 +39,14 @@ class Purifier(Device):
         return int(status.valueRange['code'])
 
     def queue_power_on(self):
-        self.queue_property_status_update({
-            'valueSingle': {'code': ValueSingle.POWER_ON},
-            'statusCode': StatusCode.POWER,
-            'valueType': ValueType.SINGLE
-        })
+        self.queue_property_status_update(SinglePropertyStatus(StatusCode.POWER, {
+            "code": ValueSingle.POWER_ON.value
+        }))
 
     def queue_power_off(self):
-        self.queue_property_status_update({
-            'valueSingle': {'code': ValueSingle.POWER_OFF},
-            'statusCode': StatusCode.POWER,
-            'valueType': ValueType.SINGLE
-        })
+        self.queue_property_status_update(SinglePropertyStatus(StatusCode.POWER, {
+            "code": ValueSingle.POWER_OFF.value
+        }))
 
     def queue_operation_mode_update(self, mode: ValueSingle):
         valid_modes = [
@@ -62,11 +58,9 @@ class Purifier(Device):
         if mode not in valid_modes:
             raise ValueError(f"Invalid operation mode: {mode}")
 
-        self.queue_property_status_update({
-            'valueSingle': {'code': mode},
-            'statusCode': StatusCode.OPERATION_MODE,
-            'valueType': ValueType.SINGLE
-        })
+        self.queue_property_status_update(SinglePropertyStatus(StatusCode.OPERATION_MODE, {
+            "code": mode.value
+        }))
 
     def queue_air_volume_update(self, volume: ValueSingle):
         valid_volumes = [
@@ -80,8 +74,6 @@ class Purifier(Device):
         if volume not in valid_volumes:
             raise ValueError(f"Invalid air volume: {volume}")
 
-        self.queue_property_status_update({
-            'valueSingle': {'code': volume},
-            'statusCode': StatusCode.AIR_VOLUME,
-            'valueType': ValueType.SINGLE
-        })
+        self.queue_property_status_update(SinglePropertyStatus(StatusCode.AIR_VOLUME, {
+            "code": volume.value
+        }))
