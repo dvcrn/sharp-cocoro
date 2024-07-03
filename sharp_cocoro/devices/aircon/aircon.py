@@ -33,6 +33,14 @@ class Aircon(Device):
         assert isinstance(ws, SinglePropertyStatus)
         return ValueSingle(ws.valueSingle['code'])
 
+    def queue_fan_update(self, fs: str) -> None:
+        s8 = State8("c20000000000c000000000000000000000000000000000000000000000000000000000000000000000000000000000000101000000000000000000000000000000000000000000000000000000000000")
+        s8.fan_direction = fs
+
+        self.queue_property_status_update(BinaryPropertyStatus(StatusCode.STATE_DETAIL, {
+            "code": s8.state
+        }))
+
     def queue_temperature_update(self, temp: float) -> None:
         s8 = State8()
         s8.temperature = temp

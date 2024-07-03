@@ -21,3 +21,16 @@ class State8:
         s[1] = hex_temp2[1]
 
         self.state = ''.join(s)
+
+    @property
+    def fan_direction(self) -> str:
+        return self.state[97]
+
+    @fan_direction.setter
+    def fan_direction(self, fan_state: int) -> str:
+        # empty_state = "c80000000000c000000000000000000000000000000000000000000000000000000000000000000000000000000000000701000000000000000000000000000000000000000000000000000000000000"
+        s = list(self.state)
+        s[97] = str(fan_state)
+        s[0] = "c"
+        s[1] = str(fan_state + 1)
+        self.state = ''.join(s)

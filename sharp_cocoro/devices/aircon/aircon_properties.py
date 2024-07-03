@@ -33,3 +33,13 @@ class ValueSingle(str, Enum):
     WINDSPEED_LEVEL_8 = '38'
     WINDSPEED_LEVEL_AUTO = '41'
 
+
+class FanDirection(int, Enum):
+    FAN_DIRECTION_AUTO = 0
+    FAN_DIRECTION_1 = 1
+    FAN_DIRECTION_2 = 2
+    FAN_DIRECTION_3 = 3
+    FAN_DIRECTION_4 = 4
+    FAN_DIRECTION_5 = 5
+    # FAN_6 = 6
+    FAN_DIRECTION_SWING = 7
