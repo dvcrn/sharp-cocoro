@@ -1,3 +1,4 @@
+from typing import Optional
 from enum import Enum
 from typing import Dict, Union, List
 from dataclasses import dataclass
@@ -39,7 +40,31 @@ class Property:
 
 @dataclass
 class SingleProperty(Property):
+    """
+    Example
+
+    SingleProperty(statusName='風量設定', statusCode='A0', get=True, set=True, inf=False, valueType='valueSingle', valueSingle=[{'name': '風量レベル1', 'code': '31'}, {'name': '風量レベル2', 'code': '32'}, {'name': '風量レベル3', 'code': '33'}, {'name': '風量レベル4', 'code': '34'}, {'name': '風量レベル5', 'code': '35'}, {'name': '風量レベル6', 'code': '36'}, {'name': '風量レベル7', 'code': '37'}, {'name': '風量レベル8', 'code': '38'}, {'name': '風量自動設定', 'code': '41'}])
+    """
     valueSingle: List[Dict[str, str]]
+
+    def codes(self) -> List[str]:
+        return [v['code'] for v in self.valueSingle]
+
+    def names(self) -> List[str]:
+        return [v['name'] for v in self.valueSingle]
+
+    def code_map(self) -> Dict[str, str]:
+        return {v['code']: v['name'] for v in self.valueSingle}
+    
+    def code_to_name(self, code: str) -> Optional[str]:
+        return self.code_map().get(code, None)    
+
+    def name_to_code(self, name: str) -> Optional[str]:
+        code_map = {v['name']: v['code'] for v in self.valueSingle}
+        return code_map.get(name, None)
+
+    def supports_code(self, code: str) -> bool:
+        return code in self.codes()
 
 @dataclass
 class BinaryProperty(Property):
@@ -47,7 +72,27 @@ class BinaryProperty(Property):
 
 @dataclass
 class RangeProperty(Property):
+    """
+    Example: 
+    RangeProperty(statusName='除湿モード時温度設定値', statusCode='B7', get=True, set=True, inf=False, valueType='valueRange', valueRange={'type': 'int', 'min': '0', 'max': '60', 'step': '1', 'unit': '℃'})
+    RangeProperty(statusName='相対温度設定値', statusCode='BF', get=True, set=True, inf=False, valueType='valueRange', valueRange={'type': 'float', 'min': '-127', 'max': '125', 'step': '0.1', 'unit': '℃'})
+    """
     valueRange: Dict[str, Union[str, RangePropertyType]]
+
+    def range_type(self) -> str:
+        return self.valueRange['type']
+
+    def range_min(self) -> str:
+        return self.valueRange['min']
+
+    def range_max(self) -> str:
+        return self.valueRange['max']
+
+    def range_step(self) -> str:
+        return self.valueRange['max']
+
+    def unit(self) -> str:
+        return self.valueRange['unit']
 
 @dataclass
 class PropertyStatus:
