@@ -1,5 +1,3 @@
-import asyncio
-import aiohttp
 import httpx
 from typing import List, Dict, Any, Union
 from .properties import DeviceType, PropertyStatus, Property
