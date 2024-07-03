@@ -47,24 +47,27 @@ class SingleProperty(Property):
     """
     valueSingle: List[Dict[str, str]]
 
-    def codes(self) -> List[str]:
+    def supported_codes(self) -> List[str]:
         return [v['code'] for v in self.valueSingle]
 
+    def supports_code(self, code: str) -> bool:
+        return code in self.supported_codes
+
+    @property
     def names(self) -> List[str]:
         return [v['name'] for v in self.valueSingle]
 
+    @property
     def code_map(self) -> Dict[str, str]:
         return {v['code']: v['name'] for v in self.valueSingle}
-    
+        
     def code_to_name(self, code: str) -> Optional[str]:
-        return self.code_map().get(code, None)    
+        return self.code_map.get(code, None)    
 
     def name_to_code(self, name: str) -> Optional[str]:
         code_map = {v['name']: v['code'] for v in self.valueSingle}
         return code_map.get(name, None)
 
-    def supports_code(self, code: str) -> bool:
-        return code in self.codes()
 
 @dataclass
 class BinaryProperty(Property):
@@ -79,18 +82,23 @@ class RangeProperty(Property):
     """
     valueRange: Dict[str, Union[str, RangePropertyType]]
 
+    @property
     def range_type(self) -> str:
         return self.valueRange['type']
 
+    @property
     def range_min(self) -> str:
         return self.valueRange['min']
 
+    @property
     def range_max(self) -> str:
         return self.valueRange['max']
 
+    @property
     def range_step(self) -> str:
         return self.valueRange['max']
 
+    @property
     def unit(self) -> str:
         return self.valueRange['unit']
 

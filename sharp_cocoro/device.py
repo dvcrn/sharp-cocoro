@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict, Optional, Union, Any
-from .properties import DeviceType, Property, PropertyStatus, ValueType, StatusCode
+from .properties import DeviceType, Property, PropertyStatus, ValueType, StatusCode, SinglePropertyStatus, RangePropertyStatus, BinaryPropertyStatus, SingleProperty, RangeProperty, BinaryProperty
 from .response_types import Box
 
 class Device(ABC):
@@ -13,7 +13,6 @@ class Device(ABC):
         self.echonet_object = echonet_object
         self.properties = properties
         self.status = status
-        # TODO: change to proper type
         self.property_updates: Dict[StatusCode, PropertyStatus] = {}
         self.maker = maker
         self.model = model
@@ -37,7 +36,6 @@ class Device(ABC):
             if not property.set:
                 raise ValueError(f"property {property.statusName} is not settable")
 
-            # TODO: change to proper type
             self.property_updates[property.statusCode] = property_status
             return
 
@@ -45,9 +43,34 @@ class Device(ABC):
 
     def get_all_properties(self) -> List[Property]:
         return self.properties
-
+        
     def get_property(self, status_code: str) -> Optional[Property]:
         return next((prop for prop in self.properties if prop.statusCode == status_code), None)
 
     def get_property_status(self, status_code: str) -> Optional[PropertyStatus]:
         return next((status for status in self.status if status.statusCode == status_code), None)
+
+    def dump_all_properties(self):
+        all_props = self.get_all_properties()
+
+        for prop in all_props:
+            prop_status = self.get_property_status(prop.statusCode)
+
+            prop_status_value = None
+            if isinstance(prop_status, SinglePropertyStatus):
+                prop_status_value = prop_status.valueSingle['code']
+            elif isinstance(prop_status, BinaryPropertyStatus):
+                prop_status_value = prop_status.valueBinary['code']
+            elif isinstance(prop_status, RangePropertyStatus):
+                prop_status_value = prop_status.valueRange['code']
+            else:
+                print(prop_status)
+
+            if isinstance(prop, SingleProperty):
+                # find the correct entry from valueSingle
+                name = prop.code_to_name(prop_status_value)
+
+                print("{} ({}): {} ({}), set={} get={} options={}".format(prop.statusName, prop.statusCode, name, prop_status_value, prop.set, prop.get, prop.names))
+            
+            else:
+                print("{} ({}): {}, set={} get={}".format(prop.statusName, prop.statusCode, prop_status_value, prop.set, prop.get))

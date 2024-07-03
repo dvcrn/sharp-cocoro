@@ -39,6 +39,35 @@ async def main():
 asyncio.run(main())
 ```
 
+To get a property:
+```python
+# example: get the operation mode
+status = device.get_property_status(StatusCode.OPERATION_MODE.value)
+assert isinstance(status, SinglePropertyStatus)
+print(ValueSingle(status.valueSingle['code'])) # returns the operation mode
+```
+
+To set it: 
+```python
+device.queue_property_status_update(ValueSingle.OPERATION_COOL)
+await cocoro.execute_queued_updates(device)
+```
+
+To get an overview of all properties available
+```python
+device.dump_all_properties()
+
+# 動作状態 (80): ON (30), set=True get=True options=['ON', 'OFF']
+# 冷房モード時温度設定値 (B5): None, set=True get=True
+# ...
+```
+
+Each property also includes information on 
+
+- It's type (binary, single, range)
+- Whether it is settable or gettable
+- And options that are allowed. In the example above, we can set the power mode only to ON or OFF
+
 ## License
 
 MIT
