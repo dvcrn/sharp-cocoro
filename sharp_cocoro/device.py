@@ -42,7 +42,15 @@ class Device(ABC):
         raise ValueError(f"property {status_code} does not exist on this device")
 
     def get_all_properties(self) -> List[Property]:
-        return self.properties
+        statuses = self.status
+        status_codes = [status.statusCode for status in statuses]
+
+        out = []
+        for prop in self.properties:
+            if prop.statusCode in status_codes:
+                out.append(prop)
+
+        return out
         
     def get_property(self, status_code: str) -> Optional[Property]:
         return next((prop for prop in self.properties if prop.statusCode == status_code), None)
