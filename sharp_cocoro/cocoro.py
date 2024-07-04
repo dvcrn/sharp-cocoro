@@ -34,7 +34,7 @@ class Cocoro:
 
     async def _create_session(self):
         if not hasattr(self, 'client') or self.client.is_closed:
-            self.client = httpx.AsyncClient(headers=self.headers)
+            self.client = httpx.AsyncClient(headers=self.headers, timeout=15.0)
 
     async def send_get_request(self, path: str) -> Dict:
         await self._create_session()

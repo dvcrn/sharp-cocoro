@@ -23,8 +23,8 @@ class State8:
         self.state = ''.join(s)
 
     @property
-    def fan_direction(self) -> str:
-        return self.state[97]
+    def fan_direction(self) -> int:
+        return int(self.state[97])
 
     @fan_direction.setter
     def fan_direction(self, fan_state: int) -> str:

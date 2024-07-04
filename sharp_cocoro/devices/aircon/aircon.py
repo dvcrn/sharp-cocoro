@@ -2,7 +2,7 @@ from typing import Union
 from ...device import Device
 from ...properties import BinaryPropertyStatus, RangePropertyStatus, SinglePropertyStatus, ValueType, enum_to_str
 from ...state import State8
-from .aircon_properties import StatusCode, ValueSingle
+from .aircon_properties import StatusCode, ValueSingle, FanDirection
 
 class Aircon(Device):
     def get_state8(self) -> State8:
@@ -33,7 +33,11 @@ class Aircon(Device):
         assert isinstance(ws, SinglePropertyStatus)
         return ValueSingle(ws.valueSingle['code'])
 
-    def queue_fan_update(self, fs: str) -> None:
+    def get_fan_direction(self) -> FanDirection:
+        st = self.get_state8()
+        return FanDirection(st.fan_direction)
+
+    def queue_fan_direction_update(self, fs: str) -> None:
         s8 = State8("c20000000000c000000000000000000000000000000000000000000000000000000000000000000000000000000000000101000000000000000000000000000000000000000000000000000000000000")
         s8.fan_direction = fs
 
