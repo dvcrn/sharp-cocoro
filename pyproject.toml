@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sharp-cocoro"
-version = "0.1.2"
+version = "0.1.3"
 description = "A Python SDK for the Cocoro API"
 authors = ["David Mohl <git@d.sh>"]
 license = "MIT"
@@ -9,7 +9,7 @@ packages = [{include = "sharp_cocoro"}]
 
 [tool.poetry.dependencies]
 python = ">=3.8"
-httpx = "^0.27.0"
+httpx = ">=0.27.0"
 
 [build-system]
 requires = ["poetry-core"]
