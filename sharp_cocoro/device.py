@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict, Optional
-from .properties import DeviceType, Property, PropertyStatus, StatusCode, SinglePropertyStatus, RangePropertyStatus, BinaryPropertyStatus, SingleProperty
+from .properties import DeviceType, Property, PropertyStatus, SinglePropertyStatus, RangePropertyStatus, BinaryPropertyStatus, SingleProperty
 from .response_types import Box
 
 class Device(ABC):
@@ -13,7 +13,7 @@ class Device(ABC):
         self.echonet_object = echonet_object
         self.properties = properties
         self.status = status
-        self.property_updates: Dict[StatusCode, PropertyStatus] = {}
+        self.property_updates: Dict[str, PropertyStatus] = {}
         self.maker = maker
         self.model = model
         self.serial_number = serial_number

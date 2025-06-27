@@ -34,7 +34,7 @@ class ValueType(str, Enum):
 @dataclass
 class Property:
     statusName: str
-    statusCode: StatusCode
+    statusCode: str
     get: bool
     set: bool
     inf: bool
@@ -106,12 +106,12 @@ class RangeProperty(Property):
 
 @dataclass
 class PropertyStatus:
-    statusCode: StatusCode
+    statusCode: str
     valueType: ValueType
 
     def to_map(self) -> Dict[str, Any]:
         return {
-            'statusCode': enum_to_str(self.statusCode),
+            'statusCode': self.statusCode,
             "valueType": enum_to_str(self.valueType)
         }
 
@@ -120,7 +120,10 @@ class SinglePropertyStatus(PropertyStatus):
     valueSingle: Dict[str, str]
 
     def __init__(self, statusCode: Union[str, StatusCode], valueSingle: Dict[str, str], valueType: Optional[ValueType] = None) -> None:
-        super().__init__(statusCode=StatusCode(statusCode), valueType=ValueType.SINGLE)
+        # If statusCode is already a StatusCode enum, convert to string
+        if isinstance(statusCode, StatusCode):
+            statusCode = statusCode.value
+        super().__init__(statusCode=statusCode, valueType=ValueType.SINGLE)
         self.valueSingle = valueSingle
 
     def to_map(self) -> Dict[str, Any]:
@@ -134,7 +137,10 @@ class BinaryPropertyStatus(PropertyStatus):
     valueBinary: Dict[str, str]
 
     def __init__(self, statusCode: Union[str, StatusCode], valueBinary: Dict[str, str], valueType: Optional[ValueType] = None) -> None:
-        super().__init__(statusCode=StatusCode(statusCode), valueType=ValueType.BINARY)
+        # If statusCode is already a StatusCode enum, convert to string
+        if isinstance(statusCode, StatusCode):
+            statusCode = statusCode.value
+        super().__init__(statusCode=statusCode, valueType=ValueType.BINARY)
         self.valueBinary = valueBinary
 
     def to_map(self) -> Dict[str, Any]:
@@ -148,7 +154,10 @@ class RangePropertyStatus(PropertyStatus):
     valueRange: Dict[str, Union[str, RangePropertyType]]
 
     def __init__(self, statusCode: Union[str, StatusCode], valueRange: Dict[str, Union[str, RangePropertyType]], valueType: Optional[ValueType] = None) -> None:
-        super().__init__(statusCode=StatusCode(statusCode), valueType=ValueType.RANGE)
+        # If statusCode is already a StatusCode enum, convert to string
+        if isinstance(statusCode, StatusCode):
+            statusCode = statusCode.value
+        super().__init__(statusCode=statusCode, valueType=ValueType.RANGE)
         self.valueRange = valueRange
 
     def to_map(self) -> Dict[str, Any]:

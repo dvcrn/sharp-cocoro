@@ -1,10 +1,9 @@
 """HTTP adapter to support both httpx and aiohttp clients."""
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, Union
-import json
 
 try:
-    import aiohttp
+    import aiohttp  # type: ignore
     HAS_AIOHTTP = True
 except ImportError:
     HAS_AIOHTTP = False
