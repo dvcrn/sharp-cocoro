@@ -38,19 +38,21 @@ class Aircon(Device):
         return FanDirection(st.fan_direction)
 
     def queue_fan_direction_update(self, fs: str) -> None:
-        s8 = State8("c20000000000c000000000000000000000000000000000000000000000000000000000000000000000000000000000000101000000000000000000000000000000000000000000000000000000000000")
-        s8.fan_direction = int(fs)
+        # Get current state to preserve existing values
+        current_state = self.get_state8()
+        current_state.fan_direction = int(fs)
 
         self.queue_property_status_update(BinaryPropertyStatus(StatusCode.STATE_DETAIL, {
-            "code": s8.state
+            "code": current_state.state
         }))
 
     def queue_temperature_update(self, temp: float) -> None:
-        s8 = State8()
-        s8.temperature = temp
+        # Get current state to preserve existing values
+        current_state = self.get_state8()
+        current_state.temperature = temp
 
         self.queue_property_status_update(BinaryPropertyStatus(StatusCode.STATE_DETAIL, {
-            "code": s8.state
+            "code": current_state.state
         }))
 
         # self.queue_property_status_update({

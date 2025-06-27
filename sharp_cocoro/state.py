@@ -28,9 +28,14 @@ class State8:
 
     @fan_direction.setter
     def fan_direction(self, fan_state: int) -> None:
-        # empty_state = "c80000000000c000000000000000000000000000000000000000000000000000000000000000000000000000000000000701000000000000000000000000000000000000000000000000000000000000"
+        # Preserve current temperature before modifying state
+        current_temp = self.temperature
+        
         s = list(self.state)
         s[97] = str(fan_state)
         s[0] = "c"
         s[1] = str(fan_state + 1)
         self.state = ''.join(s)
+        
+        # Restore temperature after fan direction update
+        self.temperature = current_temp
