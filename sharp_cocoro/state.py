@@ -24,18 +24,23 @@ class State8:
 
     @property
     def fan_direction(self) -> int:
-        return int(self.state[97])
+        # Read fan direction from positions 96-97 as a 2-digit number
+        return int(self.state[96:98])
 
     @fan_direction.setter
     def fan_direction(self, fan_state: int) -> None:
-        # Preserve current temperature before modifying state
-        current_temp = self.temperature
-        
+        # For command states, we don't restore temperature
+        # The command template should remain intact
         s = list(self.state)
-        s[96] = str(fan_state)
-        s[0] = "c"
-        s[1] = str(fan_state + 1)
-        self.state = ''.join(s)
         
-        # Restore temperature after fan direction update
-        self.temperature = current_temp
+        # Position 0-1: hex(0xC1 + fan_state) as 2-char hex string
+        hex_value = f"{0xC1 + fan_state:02x}"
+        s[0] = hex_value[0]
+        s[1] = hex_value[1]
+        
+        # Position 96-97: fan_state as 2-digit decimal with leading zero
+        decimal_value = f"{fan_state:02d}"
+        s[96] = decimal_value[0]
+        s[97] = decimal_value[1]
+        
+        self.state = ''.join(s)
