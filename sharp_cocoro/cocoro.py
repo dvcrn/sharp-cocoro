@@ -11,23 +11,27 @@ from .device import Device
 from .devices.aircon.aircon import Aircon
 from .devices.purifier.purifier import Purifier
 from .devices.unknown import UnknownDevice
+from .http_adapter import HTTPAdapter, create_adapter
 
 
 class Cocoro:
-    def __init__(self, app_secret: str, app_key: str, service_name: str = "iClub"):
+    def __init__(self, app_secret: str, app_key: str, service_name: str = "iClub", session=None):
         self.app_secret = app_secret
         self.app_key = app_key
         self.service_name = service_name
         self.is_authenticated = False
         self.api_base = "https://hms.cloudlabs.sharp.co.jp/hems/pfApi/ta"
-        self.session: Optional[httpx.AsyncClient] = None
         self.headers = {
             "Content-Type": "application/json; charset=utf-8",
             "User-Agent": "smartlink_v200i Mozilla/5.0 (iPad; CPU OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
         }
+        # Create HTTP adapter
+        self._adapter: HTTPAdapter = create_adapter(session=session, headers=self.headers)
+        # Keep session reference for backward compatibility
+        self.session = session if isinstance(session, httpx.AsyncClient) else None
 
     async def __aenter__(self) -> "Cocoro":
-        await self._create_session()
+        # No need to create session, adapter handles it
         return self
 
     async def __aexit__(
@@ -39,31 +43,20 @@ class Cocoro:
         await self.close()
 
     async def close(self) -> None:
-        if self.session:
-            await self.session.aclose()
-            self.session = None
+        await self._adapter.close()
+        self.session = None
 
     async def _create_session(self) -> None:
-        if self.session is None or self.session.is_closed:
-            self.session = httpx.AsyncClient(headers=self.headers, timeout=15.0)
+        # Deprecated - adapter handles session management
+        pass
 
     async def send_get_request(self, path: str) -> Dict[str, Any]:
-        if not self.session:
-            await self._create_session()
-        assert self.session is not None
-        response = await self.session.get(f"{self.api_base}{path}")
-        response.raise_for_status()
-        return cast(Dict[str, Any], response.json())
+        return await self._adapter.get(f"{self.api_base}{path}")
 
     async def send_post_request(
         self, path: str, body: Dict[str, Any]
     ) -> Dict[str, Any]:
-        if not self.session:
-            await self._create_session()
-        assert self.session is not None
-        response = await self.session.post(f"{self.api_base}{path}", json=body)
-        response.raise_for_status()
-        return cast(Dict[str, Any], response.json())
+        return await self._adapter.post(f"{self.api_base}{path}", body)
 
     @staticmethod
     def device_type_from_string(s: str) -> DeviceType:

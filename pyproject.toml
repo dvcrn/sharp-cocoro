@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sharp-cocoro"
-version = "0.2.1"
+version = "0.2.2"
 description = "A Python SDK for the Cocoro API"
 authors = [
     {name = "David Mohl", email = "git@d.sh"},
@@ -37,5 +37,3 @@ dev = [
     "pytest-vcr>=1.0.2",
     "vcrpy>=6.0.2",
 ]
-
-
