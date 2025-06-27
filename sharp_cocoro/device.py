@@ -20,11 +20,11 @@ class Device(ABC):
         self.box = box
 
     @abstractmethod
-    def queue_power_on(self):
+    def queue_power_on(self) -> None:
         pass
 
     @abstractmethod
-    def queue_power_off(self):
+    def queue_power_off(self) -> None:
         pass
 
     def queue_property_status_update(self, property_status: PropertyStatus) -> None:
@@ -58,7 +58,7 @@ class Device(ABC):
     def get_property_status(self, status_code: str) -> Optional[PropertyStatus]:
         return next((status for status in self.status if status.statusCode == status_code), None)
 
-    def dump_all_properties(self):
+    def dump_all_properties(self) -> None:
         all_props = self.get_all_properties()
 
         for prop in all_props:
@@ -74,7 +74,7 @@ class Device(ABC):
             else:
                 print(prop_status)
 
-            if isinstance(prop, SingleProperty):
+            if isinstance(prop, SingleProperty) and prop_status_value is not None:
                 # find the correct entry from valueSingle
                 name = prop.code_to_name(prop_status_value)
 

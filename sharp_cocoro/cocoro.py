@@ -20,43 +20,50 @@ class Cocoro:
         self.service_name = service_name
         self.is_authenticated = False
         self.api_base = "https://hms.cloudlabs.sharp.co.jp/hems/pfApi/ta"
-        self.session = None
+        self.session: Optional[httpx.AsyncClient] = None
         self.headers = {
             "Content-Type": "application/json; charset=utf-8",
             "User-Agent": "smartlink_v200i Mozilla/5.0 (iPad; CPU OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
         }
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "Cocoro":
         await self._create_session()
         return self
 
     async def __aexit__(
-        self, exc_type: Optional[type], exc: Optional[BaseException], tb: Optional[Any]
+        self,
+        exc_type: Optional[type[BaseException]],
+        exc: Optional[BaseException],
+        tb: Optional[Any],
     ) -> None:
         await self.close()
 
-    async def close(self):
+    async def close(self) -> None:
         if self.session:
-            await self.session.close()
+            await self.session.aclose()
             self.session = None
 
-    async def _create_session(self):
-        if not hasattr(self, "client") or self.client.is_closed:
-            self.client = httpx.AsyncClient(headers=self.headers, timeout=15.0)
+    async def _create_session(self) -> None:
+        if self.session is None or self.session.is_closed:
+            self.session = httpx.AsyncClient(headers=self.headers, timeout=15.0)
 
     async def send_get_request(self, path: str) -> Dict[str, Any]:
-        await self._create_session()
-        response = await self.client.get(f"{self.api_base}{path}")
+        if not self.session:
+            await self._create_session()
+        assert self.session is not None
+        response = await self.session.get(f"{self.api_base}{path}")
         response.raise_for_status()
-        return response.json()
+        return cast(Dict[str, Any], response.json())
 
     async def send_post_request(
         self, path: str, body: Dict[str, Any]
     ) -> Dict[str, Any]:
-        await self._create_session()
-        response = await self.client.post(f"{self.api_base}{path}", json=body)
+        if not self.session:
+            await self._create_session()
+        assert self.session is not None
+        response = await self.session.post(f"{self.api_base}{path}", json=body)
         response.raise_for_status()
-        return response.json()
+        return cast(Dict[str, Any], response.json())
 
     @staticmethod
     def device_type_from_string(s: str) -> DeviceType:
@@ -87,7 +94,7 @@ class Cocoro:
             f"/control/deviceProperty?boxId={box.boxId}&appSecret={self.app_secret}"
             f"&echonetNode={echonet_data.echonetNode}&echonetObject={echonet_data.echonetObject}&status=true"
         )
-        res_parsed = QueryDevicePropertiesResponse(res["deviceProperty"])
+        res_parsed = QueryDevicePropertiesResponse(device_property=res["deviceProperty"])
         return {
             "properties": res_parsed.device_property.property,
             "status": res_parsed.device_property.status,
@@ -161,8 +168,8 @@ class Cocoro:
         return devices
 
     async def execute_queued_updates(self, device: Device) -> Dict[str, Any]:
-        status_map = []
-        for key, val in device.property_updates.items():
+        status_map: List[Dict[str, Any]] = []
+        for _, val in device.property_updates.items():
             status_map.append(val.to_map())
 
         body = {
@@ -195,7 +202,6 @@ class Cocoro:
 
         for status in device.property_updates.values():
             for i, s in enumerate(device.status):
-                # TODO: change to proper type
                 if s.statusCode == status.statusCode:
                     device.status[i] = status
 

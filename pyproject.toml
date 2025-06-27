@@ -30,6 +30,14 @@ dev = [
 [tool.hatch.build.targets.wheel]
 packages = ["sharp_cocoro"]
 
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.24.0",
+    "pytest-vcr>=1.0.2",
+    "vcrpy>=6.0.2",
+]
+
 [tool.hatch.build]
 include = [
     "sharp_cocoro/py.typed",

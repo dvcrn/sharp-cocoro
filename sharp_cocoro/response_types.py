@@ -21,7 +21,7 @@ class LabelData:
     lSubInfo: str
 
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         # Parse lSubInfo if it's a JSON string
         if isinstance(self.lSubInfo, str):
             try:
@@ -70,12 +70,12 @@ class Box:
     terminalAppInfo: List[TerminalAppInfo]
     echonetData: List[EchonetData]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         # Convert terminalAppInfo dictionaries to TerminalAppInfo objects
-        self.terminalAppInfo = [TerminalAppInfo(**info) for info in self.terminalAppInfo]
+        self.terminalAppInfo = [TerminalAppInfo(**info) if isinstance(info, dict) else info for info in self.terminalAppInfo]
         
         # Convert echonetData dictionaries to EchonetData objects
-        self.echonetData = [EchonetData(**data) for data in self.echonetData]
+        self.echonetData = [EchonetData(**data) if isinstance(data, dict) else data for data in self.echonetData]
         
         # For each EchonetData object, convert its labelData dictionary to a LabelData object
         for data in self.echonetData:

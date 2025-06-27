@@ -38,17 +38,17 @@ class Purifier(Device):
         assert isinstance(status, RangePropertyStatus)
         return int(status.valueRange['code'])
 
-    def queue_power_on(self):
+    def queue_power_on(self) -> None:
         self.queue_property_status_update(SinglePropertyStatus(StatusCode.POWER, {
             "code": ValueSingle.POWER_ON.value
         }))
 
-    def queue_power_off(self):
+    def queue_power_off(self) -> None:
         self.queue_property_status_update(SinglePropertyStatus(StatusCode.POWER, {
             "code": ValueSingle.POWER_OFF.value
         }))
 
-    def queue_operation_mode_update(self, mode: ValueSingle):
+    def queue_operation_mode_update(self, mode: ValueSingle) -> None:
         valid_modes = [
             ValueSingle.OPERATION_AUTO,
             ValueSingle.OPERATION_MANUAL,
@@ -62,7 +62,7 @@ class Purifier(Device):
             "code": mode.value
         }))
 
-    def queue_air_volume_update(self, volume: ValueSingle):
+    def queue_air_volume_update(self, volume: ValueSingle) -> None:
         valid_volumes = [
             ValueSingle.AIR_VOLUME_AUTO,
             ValueSingle.AIR_VOLUME_QUIET,

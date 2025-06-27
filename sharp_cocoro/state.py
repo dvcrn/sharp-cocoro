@@ -8,7 +8,7 @@ class State8:
         return int(t, 16) / 2
 
     @temperature.setter
-    def temperature(self, t: float):
+    def temperature(self, t: float) -> None:
         s = list(self.state)
         hex_temp = hex(int(t * 2))[2:].zfill(2)
         s[52] = hex_temp[0]
@@ -27,7 +27,7 @@ class State8:
         return int(self.state[97])
 
     @fan_direction.setter
-    def fan_direction(self, fan_state: int):
+    def fan_direction(self, fan_state: int) -> None:
         # empty_state = "c80000000000c000000000000000000000000000000000000000000000000000000000000000000000000000000000000701000000000000000000000000000000000000000000000000000000000000"
         s = list(self.state)
         s[97] = str(fan_state)

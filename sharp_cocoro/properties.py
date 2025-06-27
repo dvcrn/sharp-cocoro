@@ -1,12 +1,14 @@
-from typing import Optional, Any
+from typing import Optional, Any, TypeVar, cast
 from enum import Enum
 from typing import Dict, Union, List
 from dataclasses import dataclass
 
-def enum_to_str(v):
+T = TypeVar("T")
+
+def enum_to_str(v: T) -> Union[T, str]:
     # check if v is a enum, if it is we output e.value, if not, just a str
     if isinstance(v, Enum):
-        return v.value
+        return cast(str, v.value)
     return v
 
 class StatusCode(str, Enum):
@@ -117,7 +119,7 @@ class PropertyStatus:
 class SinglePropertyStatus(PropertyStatus):
     valueSingle: Dict[str, str]
 
-    def __init__(self, statusCode: Union[str, StatusCode], valueSingle: Dict[str, str], valueType=None):
+    def __init__(self, statusCode: Union[str, StatusCode], valueSingle: Dict[str, str], valueType: Optional[ValueType] = None) -> None:
         super().__init__(statusCode=StatusCode(statusCode), valueType=ValueType.SINGLE)
         self.valueSingle = valueSingle
 
@@ -131,7 +133,7 @@ class SinglePropertyStatus(PropertyStatus):
 class BinaryPropertyStatus(PropertyStatus):
     valueBinary: Dict[str, str]
 
-    def __init__(self, statusCode: Union[str, StatusCode], valueBinary: Dict[str, str], valueType=None):
+    def __init__(self, statusCode: Union[str, StatusCode], valueBinary: Dict[str, str], valueType: Optional[ValueType] = None) -> None:
         super().__init__(statusCode=StatusCode(statusCode), valueType=ValueType.BINARY)
         self.valueBinary = valueBinary
 
@@ -145,7 +147,7 @@ class BinaryPropertyStatus(PropertyStatus):
 class RangePropertyStatus(PropertyStatus):
     valueRange: Dict[str, Union[str, RangePropertyType]]
 
-    def __init__(self, statusCode: Union[str, StatusCode], valueRange: Dict[str, Union[str, RangePropertyType]], valueType=None):
+    def __init__(self, statusCode: Union[str, StatusCode], valueRange: Dict[str, Union[str, RangePropertyType]], valueType: Optional[ValueType] = None) -> None:
         super().__init__(statusCode=StatusCode(statusCode), valueType=ValueType.RANGE)
         self.valueRange = valueRange
 
