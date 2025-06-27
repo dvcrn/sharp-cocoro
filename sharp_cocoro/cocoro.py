@@ -1,11 +1,14 @@
 import httpx
+import asyncio
+import time
 from typing import List, Dict, Any, Union, Optional, Sequence, cast
-from .properties import DeviceType, PropertyStatus, Property
+from .properties import DeviceType, PropertyStatus, Property, ControlResultStatus
 from .response_types import (
     Box,
     QueryBoxesResponse,
     QueryDevicePropertiesResponse,
     ControlListResponse,
+    ControlResultResponse,
 )
 from .device import Device
 from .devices.aircon.aircon import Aircon
@@ -15,7 +18,9 @@ from .http_adapter import HTTPAdapter, create_adapter
 
 
 class Cocoro:
-    def __init__(self, app_secret: str, app_key: str, service_name: str = "iClub", session=None):
+    def __init__(
+        self, app_secret: str, app_key: str, service_name: str = "iClub", session=None
+    ):
         self.app_secret = app_secret
         self.app_key = app_key
         self.service_name = service_name
@@ -26,7 +31,9 @@ class Cocoro:
             "User-Agent": "smartlink_v200i Mozilla/5.0 (iPad; CPU OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
         }
         # Create HTTP adapter
-        self._adapter: HTTPAdapter = create_adapter(session=session, headers=self.headers)
+        self._adapter: HTTPAdapter = create_adapter(
+            session=session, headers=self.headers
+        )
         # Keep session reference for backward compatibility
         self.session = session if isinstance(session, httpx.AsyncClient) else None
 
@@ -87,7 +94,9 @@ class Cocoro:
             f"/control/deviceProperty?boxId={box.boxId}&appSecret={self.app_secret}"
             f"&echonetNode={echonet_data.echonetNode}&echonetObject={echonet_data.echonetObject}&status=true"
         )
-        res_parsed = QueryDevicePropertiesResponse(device_property=res["deviceProperty"])
+        res_parsed = QueryDevicePropertiesResponse(
+            device_property=res["deviceProperty"]
+        )
         return {
             "properties": res_parsed.device_property.property,
             "status": res_parsed.device_property.status,
@@ -116,47 +125,53 @@ class Cocoro:
             serial_number = echonet_data.serialNumber or ""
 
             if device_type == DeviceType.AirCleaner:
-                devices.append(Purifier(
-                    name=name,
-                    kind=device_type,
-                    device_id=device_id,
-                    echonet_node=echonet_node,
-                    echonet_object=echonet_object,
-                    properties=properties,
-                    status=status,
-                    maker=maker,
-                    model=model,
-                    serial_number=serial_number,
-                    box=box,
-                ))
+                devices.append(
+                    Purifier(
+                        name=name,
+                        kind=device_type,
+                        device_id=device_id,
+                        echonet_node=echonet_node,
+                        echonet_object=echonet_object,
+                        properties=properties,
+                        status=status,
+                        maker=maker,
+                        model=model,
+                        serial_number=serial_number,
+                        box=box,
+                    )
+                )
             elif device_type == DeviceType.AirCondition:
-                devices.append(Aircon(
-                    name=name,
-                    kind=device_type,
-                    device_id=device_id,
-                    echonet_node=echonet_node,
-                    echonet_object=echonet_object,
-                    properties=properties,
-                    status=status,
-                    maker=maker,
-                    model=model,
-                    serial_number=serial_number,
-                    box=box,
-                ))
+                devices.append(
+                    Aircon(
+                        name=name,
+                        kind=device_type,
+                        device_id=device_id,
+                        echonet_node=echonet_node,
+                        echonet_object=echonet_object,
+                        properties=properties,
+                        status=status,
+                        maker=maker,
+                        model=model,
+                        serial_number=serial_number,
+                        box=box,
+                    )
+                )
             else:
-                devices.append(UnknownDevice(
-                    name=name,
-                    kind=device_type,
-                    device_id=device_id,
-                    echonet_node=echonet_node,
-                    echonet_object=echonet_object,
-                    properties=properties,
-                    status=status,
-                    maker=maker,
-                    model=model,
-                    serial_number=serial_number,
-                    box=box,
-                ))
+                devices.append(
+                    UnknownDevice(
+                        name=name,
+                        kind=device_type,
+                        device_id=device_id,
+                        echonet_node=echonet_node,
+                        echonet_object=echonet_object,
+                        properties=properties,
+                        status=status,
+                        maker=maker,
+                        model=model,
+                        serial_number=serial_number,
+                        box=box,
+                    )
+                )
 
         return devices
 
@@ -201,6 +216,88 @@ class Cocoro:
         device.property_updates.clear()
 
         return json_body
+
+    async def check_control_results(
+        self, device: Device, control_ids: List[str]
+    ) -> ControlResultResponse:
+        """
+        Check the status of control commands by their IDs.
+
+        Args:
+            device: The device that was controlled
+            control_ids: List of control IDs to check
+
+        Returns:
+            ControlResultResponse with current status of each control
+        """
+        body = {"resultList": [{"id": control_id} for control_id in control_ids]}
+
+        json_body = await self.send_post_request(
+            f"/control/controlResult?boxId={device.box.boxId}&appSecret={self.app_secret}",
+            body,
+        )
+
+        return ControlResultResponse(**json_body)
+
+    async def wait_for_control_completion(
+        self,
+        device: Device,
+        control_ids: List[str],
+        timeout: float = 30.0,
+        poll_interval: float = 1.0,
+    ) -> ControlResultResponse:
+        """
+        Poll control results until all commands are completed or timeout.
+
+        Args:
+            device: Device that was controlled
+            control_ids: List of control IDs to monitor
+            timeout: Maximum time to wait in seconds
+            poll_interval: Time between polls in seconds
+
+        Returns:
+            Final ControlResultResponse when all controls are done
+
+        Raises:
+            TimeoutError: If timeout is exceeded
+            Exception: If any control has an error
+        """
+        start_time = time.time()
+
+        while True:
+            # Check if we've exceeded the timeout
+            elapsed = time.time() - start_time
+            if elapsed >= timeout:
+                raise TimeoutError(
+                    f"Control completion timed out after {timeout} seconds"
+                )
+
+            # Poll the current status
+            result = await self.check_control_results(device, control_ids)
+
+            # Check if all controls are finished (success or unmatch)
+            finished_states = {ControlResultStatus.SUCCESS, ControlResultStatus.UNMATCH}
+            all_finished = all(
+                item.status in finished_states for item in result.resultList
+            )
+
+            if all_finished:
+                return result
+
+            # Check for any error states
+            error_items = [
+                item
+                for item in result.resultList
+                if item.errorCode and item.errorCode != ""
+            ]
+            if error_items:
+                error_messages = [
+                    f"Control {item.id}: {item.errorCode}" for item in error_items
+                ]
+                raise Exception("Control errors: " + ", ".join(error_messages))
+
+            # Wait before next poll
+            await asyncio.sleep(poll_interval)
 
     async def fetch_device(self, device: Device) -> Device:
         devices = await self.query_devices()

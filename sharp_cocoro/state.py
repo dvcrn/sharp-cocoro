@@ -32,7 +32,7 @@ class State8:
         current_temp = self.temperature
         
         s = list(self.state)
-        s[97] = str(fan_state)
+        s[96] = str(fan_state)
         s[0] = "c"
         s[1] = str(fan_state + 1)
         self.state = ''.join(s)
