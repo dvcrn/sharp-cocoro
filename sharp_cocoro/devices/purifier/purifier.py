@@ -1,5 +1,5 @@
 from ...device import Device
-from ...properties import BinaryPropertyStatus, RangePropertyStatus, SinglePropertyStatus, ValueType
+from ...properties import RangePropertyStatus, SinglePropertyStatus
 from .purifier_properties import StatusCode, ValueSingle
 
 class Purifier(Device):

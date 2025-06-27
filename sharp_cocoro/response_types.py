@@ -1,4 +1,4 @@
-from typing import List, Dict, Union, Optional
+from typing import List, Dict, Union, Optional, Any
 from .properties import Property, PropertyStatus, ValueType, SingleProperty, BinaryProperty, RangeProperty, SinglePropertyStatus, BinaryPropertyStatus, RangePropertyStatus
 
 from dataclasses import dataclass
@@ -79,17 +79,18 @@ class Box:
         
         # For each EchonetData object, convert its labelData dictionary to a LabelData object
         for data in self.echonetData:
-            data.labelData = LabelData(**data.labelData)
+            if isinstance(data.labelData, dict):
+                data.labelData = LabelData(**data.labelData)
 
 
 class QueryBoxesResponse:
-    def __init__(self, box: List[Box]):
+    def __init__(self, box: List[Dict[str, Any]]):
         self.box = [Box(**item) for item in box]
 
 class QueryDevicePropertiesResponse:
-    def __init__(self, device_property: Dict[str, Union[int, str, List[Dict], List[Dict]]]):
-        properties = []
-        for prop in device_property['property']:
+    def __init__(self, device_property: Dict[str, Any]):
+        properties: List[Property] = []
+        for prop in device_property.get('property', []):
             prop_type = ValueType(prop['valueType'])
             prop_data = {k: v for k, v in prop.items() if k not in ['valueSingle', 'valueBinary', 'valueRange']}
             
@@ -104,8 +105,8 @@ class QueryDevicePropertiesResponse:
             else:
                 raise ValueError(f"Unknown property type: {prop_type}")
 
-        statuses = []
-        for status in device_property['status']:
+        statuses: List[PropertyStatus] = []
+        for status in device_property.get('status', []):
             status_type = ValueType(status['valueType'])
             status_data = {k: v for k, v in status.items() if k not in ['valueSingle', 'valueBinary', 'valueRange']}
             

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict, Optional, Union, Any
-from .properties import DeviceType, Property, PropertyStatus, ValueType, StatusCode, SinglePropertyStatus, RangePropertyStatus, BinaryPropertyStatus, SingleProperty, RangeProperty, BinaryProperty
+from typing import List, Dict, Optional
+from .properties import DeviceType, Property, PropertyStatus, StatusCode, SinglePropertyStatus, RangePropertyStatus, BinaryPropertyStatus, SingleProperty
 from .response_types import Box
 
 class Device(ABC):

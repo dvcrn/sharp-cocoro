@@ -1,16 +1,37 @@
-[tool.poetry]
-name = "sharp-cocoro"
-version = "0.1.3"
-description = "A Python SDK for the Cocoro API"
-authors = ["David Mohl <git@d.sh>"]
-license = "MIT"
-readme = "README.md"
-packages = [{include = "sharp_cocoro"}]
-
-[tool.poetry.dependencies]
-python = ">=3.8"
-httpx = ">=0.27.0"
-
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sharp-cocoro"
+version = "0.2.0"
+description = "A Python SDK for the Cocoro API"
+authors = [
+    {name = "David Mohl", email = "git@d.sh"},
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "httpx>=0.27.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/dvcrn/sharp-cocoro"
+Repository = "https://github.com/dvcrn/sharp-cocoro"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "mypy"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["sharp_cocoro"]
+
+[tool.hatch.build]
+include = [
+    "sharp_cocoro/py.typed",
+]
+

@@ -1,6 +1,6 @@
 from typing import Union
 from ...device import Device
-from ...properties import BinaryPropertyStatus, RangePropertyStatus, SinglePropertyStatus, ValueType, enum_to_str
+from ...properties import BinaryPropertyStatus, RangePropertyStatus, SinglePropertyStatus, enum_to_str
 from ...state import State8
 from .aircon_properties import StatusCode, ValueSingle, FanDirection
 
@@ -39,7 +39,7 @@ class Aircon(Device):
 
     def queue_fan_direction_update(self, fs: str) -> None:
         s8 = State8("c20000000000c000000000000000000000000000000000000000000000000000000000000000000000000000000000000101000000000000000000000000000000000000000000000000000000000000")
-        s8.fan_direction = fs
+        s8.fan_direction = int(fs)
 
         self.queue_property_status_update(BinaryPropertyStatus(StatusCode.STATE_DETAIL, {
             "code": s8.state

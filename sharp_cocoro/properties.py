@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 from enum import Enum
 from typing import Dict, Union, List
 from dataclasses import dataclass
@@ -51,7 +51,7 @@ class SingleProperty(Property):
         return [v['code'] for v in self.valueSingle]
 
     def supports_code(self, code: str) -> bool:
-        return code in self.supported_codes
+        return code in self.supported_codes()
 
     @property
     def names(self) -> List[str]:
@@ -107,7 +107,7 @@ class PropertyStatus:
     statusCode: StatusCode
     valueType: ValueType
 
-    def to_map(self) -> Dict[str, Union[StatusCode, ValueType]]:
+    def to_map(self) -> Dict[str, Any]:
         return {
             'statusCode': enum_to_str(self.statusCode),
             "valueType": enum_to_str(self.valueType)
@@ -118,10 +118,10 @@ class SinglePropertyStatus(PropertyStatus):
     valueSingle: Dict[str, str]
 
     def __init__(self, statusCode: Union[str, StatusCode], valueSingle: Dict[str, str], valueType=None):
-        super().__init__(statusCode=statusCode, valueType=ValueType.SINGLE)
+        super().__init__(statusCode=StatusCode(statusCode), valueType=ValueType.SINGLE)
         self.valueSingle = valueSingle
 
-    def to_map(self) -> Dict[str, Union[str, StatusCode, ValueType, Dict[str, str]]]:
+    def to_map(self) -> Dict[str, Any]:
         return {
             **super().to_map(),
             'valueSingle': self.valueSingle
@@ -132,10 +132,10 @@ class BinaryPropertyStatus(PropertyStatus):
     valueBinary: Dict[str, str]
 
     def __init__(self, statusCode: Union[str, StatusCode], valueBinary: Dict[str, str], valueType=None):
-        super().__init__(statusCode=statusCode, valueType=ValueType.BINARY)
+        super().__init__(statusCode=StatusCode(statusCode), valueType=ValueType.BINARY)
         self.valueBinary = valueBinary
 
-    def to_map(self) -> Dict[str, Union[str, StatusCode, ValueType, Dict[str, str]]]:
+    def to_map(self) -> Dict[str, Any]:
         return {
             **super().to_map(),
             'valueBinary': self.valueBinary
@@ -146,10 +146,10 @@ class RangePropertyStatus(PropertyStatus):
     valueRange: Dict[str, Union[str, RangePropertyType]]
 
     def __init__(self, statusCode: Union[str, StatusCode], valueRange: Dict[str, Union[str, RangePropertyType]], valueType=None):
-        super().__init__(statusCode=statusCode, valueType=ValueType.RANGE)
+        super().__init__(statusCode=StatusCode(statusCode), valueType=ValueType.RANGE)
         self.valueRange = valueRange
 
-    def to_map(self) -> Dict[str, Union[str, StatusCode, ValueType, Dict[str, Union[str, RangePropertyType]]]]:
+    def to_map(self) -> Dict[str, Any]:
         return {
             **super().to_map(),
             'valueRange': self.valueRange

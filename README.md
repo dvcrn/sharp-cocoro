@@ -1,6 +1,20 @@
 # Sharp Cocoro Air SDK in python
 
-Basically a quick and dirty conversion of https://github.com/dvcrn/cocoro-sdk/ into python. Probably some bugs along the way. 
+Basically a quick and dirty conversion of https://github.com/dvcrn/cocoro-sdk/ into python. Probably some bugs along the way.
+
+## Installation
+
+```bash
+uv add sharp-cocoro
+```
+
+Or install from source:
+
+```bash
+git clone https://github.com/dvcrn/sharp-cocoro
+cd sharp-cocoro
+uv sync
+```
 
 ## Usage:
 
@@ -16,11 +30,11 @@ async def main():
         devices = await cocoro.query_devices()
         device = devices[0]
 
-        
+
         all_props = device.get_all_properties()
         for prop in all_props:
             print(prop)
-        
+
         if isinstance(device, Aircon):
             aircon = device
 
@@ -47,7 +61,7 @@ assert isinstance(status, SinglePropertyStatus)
 print(ValueSingle(status.valueSingle['code'])) # returns the operation mode
 ```
 
-To set it: 
+To set it:
 ```python
 device.queue_property_status_update(ValueSingle.OPERATION_COOL)
 await cocoro.execute_queued_updates(device)
@@ -62,7 +76,7 @@ device.dump_all_properties()
 # ...
 ```
 
-Each property also includes information on 
+Each property also includes information on
 
 - It's type (binary, single, range)
 - Whether it is settable or gettable
