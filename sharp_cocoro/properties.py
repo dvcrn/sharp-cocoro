@@ -25,6 +25,8 @@ class DeviceType(str, Enum):
     Unknown = "UNKNOWN"
     AirCondition = "AIR_CON"
     AirCleaner = "AIR_CLEANER"
+    Healsio = "HEALSIO"
+    HotCook = "HOTCOOK"
 
 
 class RangePropertyType(str, Enum):
